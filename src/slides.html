@@ -1,0 +1,485 @@
+<!doctype html>
+<html class="h-full">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="../dist/output.css" rel="stylesheet">
+  <link rel="preload" as="video" href="../media/starback1.mp4">
+  <link rel="preload" as="video" href="../media/starback2.mp4">
+  <link rel="preload" as="video" href="../media/starback3.mp4">
+</head>
+
+<style>
+  body {
+    overflow: hidden;
+  }
+
+  #myVideo {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    transition: opacity 0.5s ease;
+  }
+
+  #overlay {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  #overlay.visible {
+    display: flex;
+    opacity: 1;
+  }
+
+  #overlay img {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  #overlay.visible img {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .text-outline {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .text-outline2 {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .text-outline3 {
+    display: block;
+    width: 100%;
+    overflow: visible;
+  }
+
+  .text-outline text {
+    font-family: 'Golos Text', sans-serif;
+    font-weight: 900;
+    stroke: white;
+    stroke-width: 10;
+    paint-order: stroke fill;
+    fill: url(#textGrad);
+  }
+
+  .text-outline2 text {
+    font-family: 'Golos Text', sans-serif;
+    font-weight: 900;
+    stroke: white;
+    stroke-width: 10;
+    paint-order: stroke fill;
+    fill: url(#textGrad2);
+  }
+
+  .text-outline3 text {
+    font-family: 'Golos Text', sans-serif;
+    font-weight: 900;
+    stroke: white;
+    stroke-width: 10;
+    paint-order: stroke fill;
+    fill: url(#textGrad3);
+  }
+
+  @keyframes wobble {
+    0% {
+      transform: rotate(-1deg);
+    }
+
+    50% {
+      transform: rotate(1deg);
+    }
+
+    100% {
+      transform: rotate(-1deg);
+    }
+  }
+
+
+  /* Slides */
+  .slides-wrapper {
+    display: flex;
+    transition: transform 0.6s cubic-bezier(0.77, 0, 0.18, 1);
+    height: 100%;
+    width: 100%;
+  }
+
+  .slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @media (min-width: 768px) {
+    .slide {
+      flex-direction: row;
+    }
+  }
+
+  /* Boutons nav */
+  .nav-btn {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    font-size: 1.5rem;
+    width: 75px;
+    height: 75px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .nav-btn2 {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    font-size: 1rem;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+  .nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  #btn-prev {
+    left: 1rem;
+  }
+
+  #btn-next {
+    right: 1rem;
+  }
+
+  .nav-btn2:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  #btn-prev {
+    left: 1rem;
+  }
+
+  #btn-next {
+    right: 1rem;
+  }
+
+  /* Dots */
+</style>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="textGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1500FF" />
+      <stop offset="100%" stop-color="#08005C" />
+    </linearGradient>
+    <linearGradient id="textGrad2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FF81AC" />
+      <stop offset="100%" stop-color="#6A0024" />
+    </linearGradient>
+    <linearGradient id="textGrad3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1500FF" />
+      <stop offset="100%" stop-color="#08005C" />
+    </linearGradient>
+  </defs>
+</svg>
+
+<body class="h-full font-golos-text font-black overflow-hidden">
+
+  <a href="./index.html" style="text-decoration:none; top:1rem; right:1rem; transform:none;"
+    class="fixed z-40 nav-btn2">Menu</a>
+
+  <video autoplay muted loop playsinline preload id="myVideo">
+    <source src="../media/starback1.mp4" type="video/mp4">
+  </video>
+
+  <!-- Overlay fullscreen -->
+  <div id="overlay" class="fixed inset-0 bg-black/80 z-50 items-center justify-center cursor-pointer">
+    <img id="overlayImgEl" class="max-h-screen max-w-full object-contain rounded-xl p-5" src="../media/Rectangle.png"
+      alt="art fullscreen" />
+    <div id="magnifier" class="fixed pointer-events-none rounded-full border-4 border-white overflow-hidden"
+      style="width:200px; height:200px; z-index:100; display:none;"></div>
+  </div>
+
+  <!-- Boutons navigation -->
+  <button id="btn-prev" class="nav-btn">&#9664;</button>
+  <button id="btn-next" class="nav-btn">&#9654;</button>
+
+  <!-- Dots -->
+  <div class="dots" id="dots"></div>
+
+  <!-- Container slides -->
+  <div style="overflow:hidden; height:100%; width:100%;">
+    <div class="slides-wrapper" id="slidesWrapper">
+
+      <!-- ============================================ -->
+      <!-- SLIDE 1 — duplique ce bloc pour en créer d'autres -->
+      <!-- ============================================ -->
+      <div class="slide" data-video="../media/starback1.mp4">
+        <img
+          class="left-img cursor-pointer object-contain shadow-[-8px_5px_0px_rgba(0_0_0/_0.3)] m-8 md:m-16 md:mr-8 max-h-[45vh] md:max-h-[calc(100vh-8rem)] rounded-xl"
+          src="../media/Rectangle.png" alt="art" data-full="../media/Rectangle.png" />
+
+        <div class="relative m-8 md:m-16 md:ml-8 max-h-[45vh] md:max-h-[calc(100vh-8rem)]">
+          <img class="object-cover shadow-[-8px_5px_0px_rgba(0_0_0/_0.3)] h-full w-full rounded-[3vw]"
+            src="../media/Group34.png" alt="art" />
+          <canvas class="fireflies-canvas absolute inset-0 w-full h-full rounded-[3vw] pointer-events-none"></canvas>
+          <div class="absolute top-0 left-0 right-0 pt-9 pr-11 pl-11 pb-9 rounded-b-[3vw]">
+            <svg class="text-outline origin-[25%_50%]" viewBox="0 0 800 100"><text x="0" y="80"
+                font-size="90">SKELETON</text></svg>
+            <svg class="text-outline mt-14 origin-[13%_50%]" viewBox="0 0 800 40"><text x="0" y="60" font-size="70">-
+                2026</text></svg>
+            <svg class="text-outline mt-19 origin-[35%_50%]" viewBox="0 0 800 40"><text x="0" y="50" font-size="70">-
+                MADE ON FIGMA</text></svg>
+            <svg class="text-outline mt-15 origin-[22%_50%]" viewBox="0 0 800 40"><text x="0" y="50" font-size="70">-
+                COLLAGE</text></svg>
+          </div>
+        </div>
+      </div>
+      <!-- ============================================ -->
+
+      <!-- SLIDE 2 -->
+      <div class="slide" data-video="../media/starback2.mp4">
+        <img
+          class="left-img cursor-pointer object-contain shadow-[-8px_5px_0px_rgba(0_0_0/_0.3)] m-8 md:m-16 md:mr-8 max-h-[45vh] md:max-h-[calc(100vh-8rem)] rounded-xl"
+          src="../media/Group37.png" alt="art" data-full="../media/Group37.png" />
+
+        <div class="relative m-8 md:m-16 md:ml-8 max-h-[45vh] md:max-h-[calc(100vh-8rem)]">
+          <img class="object-cover shadow-[-8px_5px_0px_rgba(0_0_0/_0.3)] h-full w-full rounded-[3vw]"
+            src="../media/Group35.png" alt="art" />
+          <canvas class="fireflies-canvas absolute inset-0 w-full h-full rounded-[3vw] pointer-events-none"></canvas>
+          <div class="absolute top-0 left-0 right-0 pt-9 pr-11 pl-11 pb-9 rounded-b-[3vw]">
+            <svg class="text-outline2 origin-[10%_50%]" viewBox="0 0 800 100"><text x="0" y="80"
+                font-size="90">ALI</text></svg>
+            <svg class="text-outline2 mt-14 origin-[13%_50%]" viewBox="0 0 800 40"><text x="0" y="60" font-size="70">-
+                2026</text></svg>
+            <svg class="text-outline2 mt-19 origin-[35%_50%]" viewBox="0 0 800 40"><text x="0" y="50" font-size="70">-
+                MADE ON FIGMA</text></svg>
+            <svg class="text-outline2 mt-15 origin-[22%_50%]" viewBox="0 0 800 40"><text x="0" y="50" font-size="70">-
+                COLLAGE FOR MY GF</text></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3 -->
+      <div class="slide" data-video="../media/skyback1.mp4">
+        <img
+          class="left-img cursor-pointer object-contain shadow-[-8px_5px_0px_rgba(0_0_0/_0.3)] m-8 md:m-16 md:mr-8 max-h-[45vh] md:max-h-[calc(100vh-8rem)] rounded-xl"
+          src="../media/Group38.jpg" alt="art" data-full="../media/Group38.jpg" />
+
+        <div class="relative m-8 md:m-16 md:ml-8 max-h-[45vh] md:max-h-[calc(100vh-8rem)]">
+          <img class="object-cover shadow-[-8px_5px_0px_rgba(0_0_0/_0.3)] h-full w-full rounded-[3vw]"
+            src="../media/Group34.png" alt="art" />
+          <canvas class="fireflies-canvas absolute inset-0 w-full h-full rounded-[3vw] pointer-events-none"></canvas>
+          <div class="absolute top-0 left-0 right-0 pt-9 pr-11 pl-11 pb-9 rounded-b-[3vw]">
+            <svg class="text-outline3 origin-[25%_50%]" viewBox="0 0 800 100"><text x="0" y="80"
+                font-size="90">DREAMING</text></svg>
+            <svg class="text-outline3 mt-14 origin-[13%_50%]" viewBox="0 0 800 40"><text x="0" y="60" font-size="70">-
+                2025</text></svg>
+            <svg class="text-outline3 mt-19 origin-[35%_50%]" viewBox="0 0 800 40"><text x="0" y="50" font-size="70">-
+                MADE ON FIGMA</text></svg>
+            <svg class="text-outline3 mt-15 origin-[22%_50%]" viewBox="0 0 800 40"><text x="0" y="50" font-size="70">-
+                COLLAGE</text></svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =====================
+    // SLIDER
+    // =====================
+    const wrapper = document.getElementById('slidesWrapper');
+    const slides = document.querySelectorAll('.slide');
+    const dotsContainer = document.getElementById('dots');
+    const video = document.getElementById('myVideo');
+    let current = 0;
+    // Précharge toutes les vidéos au démarrage
+    slides.forEach(slide => {
+      const src = slide.dataset.video;
+      const v = document.createElement('video');
+      v.src = src;
+      v.preload = 'auto';
+      v.load();
+    });
+
+    document.querySelectorAll('.text-outline, .text-outline2, .text-outline3').forEach((el) => {
+      el.style.animation = 'wobble 2s ease-in-out infinite';
+      el.style.animationDelay = `${-(Math.random() * 2)}s`;
+    });
+
+    // Créer les dots
+    slides.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (i === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => goTo(i));
+      dotsContainer.appendChild(dot);
+    });
+
+    function goTo(index) {
+      current = index;
+      wrapper.style.transform = `translateX(-${current * 100}%)`;
+
+      // Force resize des canvas de la slide active
+      setTimeout(() => {
+        slides[current].querySelectorAll('.fireflies-canvas').forEach(canvas => {
+          canvas.width = canvas.offsetWidth;
+          canvas.height = canvas.offsetHeight;
+        });
+      }, 100);
+
+      // Update dots
+      document.querySelectorAll('.dot').forEach((d, i) => {
+        d.classList.toggle('active', i === current);
+      });
+
+      // Change video
+      const newVideo = slides[current].dataset.video;
+      const source = video.querySelector('source');
+      if (source.src !== new URL(newVideo, location.href).href) {
+        video.style.opacity = 0;
+        setTimeout(() => {
+          source.src = newVideo;
+          video.load();
+          video.play();
+          video.style.opacity = 1;
+        }, 400);
+      }
+    }
+
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      goTo((current - 1 + slides.length) % slides.length);
+    });
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      goTo((current + 1) % slides.length);
+    });
+
+    // Swipe mobile
+    let startX = 0;
+    wrapper.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+    wrapper.addEventListener('touchend', e => {
+      const diff = startX - e.changedTouches[0].clientX;
+      if (diff > 50) goTo((current + 1) % slides.length);
+      if (diff < -50) goTo((current - 1 + slides.length) % slides.length);
+    });
+
+    // =====================
+    // OVERLAY + LOUPE
+    // =====================
+    const overlay = document.getElementById('overlay');
+    const overlayImgEl = document.getElementById('overlayImgEl');
+    const magnifier = document.getElementById('magnifier');
+
+    document.querySelectorAll('.left-img').forEach(img => {
+      img.addEventListener('click', () => {
+        overlayImgEl.src = img.dataset.full;
+        overlay.classList.add('visible');
+      });
+    });
+
+    overlay.addEventListener('click', () => overlay.classList.remove('visible'));
+    overlayImgEl.addEventListener('click', e => e.stopPropagation());
+
+    overlayImgEl.addEventListener('mousemove', (e) => {
+      const rect = overlayImgEl.getBoundingClientRect();
+      const zoom = 3, size = 200;
+      const bgX = (e.clientX - rect.left) / rect.width * 100;
+      const bgY = (e.clientY - rect.top) / rect.height * 100;
+      magnifier.style.display = 'block';
+      magnifier.style.left = (e.clientX - size / 2) + 'px';
+      magnifier.style.top = (e.clientY - size / 2) + 'px';
+      magnifier.style.backgroundImage = `url(${overlayImgEl.src})`;
+      magnifier.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
+      magnifier.style.backgroundPosition = `${bgX}% ${bgY}%`;
+      magnifier.style.backgroundRepeat = 'no-repeat';
+    });
+
+    overlayImgEl.addEventListener('mouseleave', () => magnifier.style.display = 'none');
+
+    // =====================
+    // LUCIOLES (sur chaque canvas)
+    // =====================
+    document.querySelectorAll('.fireflies-canvas').forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+
+      function resizeCanvas() {
+        // Prend les dimensions du parent si le canvas est à 0
+        canvas.width = canvas.offsetWidth || canvas.parentElement.offsetWidth;
+        canvas.height = canvas.offsetHeight || canvas.parentElement.offsetHeight;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      const fireflies = Array.from({ length: 40 }, () => ({
+        x: Math.random(), y: 1,
+        speed: 0.001 + Math.random() * 0.002,
+        size: 10 + Math.random() * 11,
+        opacity: 0,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.02 + Math.random() * 0.03,
+        color: '255, 255, 255'
+      }));
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        fireflies.forEach(f => {
+          f.y -= f.speed;
+          f.wobble += f.wobbleSpeed;
+          f.x += Math.sin(f.wobble) * 0.0005;
+          if (f.y > 0.25) f.opacity = (1 - f.y) / 0.75;
+          else if (f.y > 0) f.opacity = f.y / 0.25;
+          else { f.y = 1; f.x = Math.random(); f.opacity = 0; }
+
+          const px = f.x * canvas.width;
+          const py = f.y * canvas.height;
+
+          ctx.fillStyle = `rgba(${f.color}, ${f.opacity})`;
+          ctx.beginPath();
+          ctx.arc(px, py, f.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        requestAnimationFrame(animate);
+      }
+      animate();
+    });
+  </script>
+
+</body>
+
+</html>

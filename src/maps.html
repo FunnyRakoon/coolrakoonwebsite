@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium</title>
+    <link href="../dist/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: url('https://images4.alphacoders.com/134/thumb-1920-1349546.png') center center / cover no-repeat;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            font-family: sans-serif;
+        }
+
+#bg {
+    position: fixed;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+#bg.visible { opacity: 1; }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+        }
+
+        #tank {
+            position: fixed;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        #vignette {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(
+                ellipse at center,
+                transparent 25%,
+                rgba(255, 255, 255, 0.216) 100%
+            );
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        .fish {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            pointer-events: all;
+            user-select: none;
+        }
+
+        .fish-icon {
+            width: 110px;
+            height: 110px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            box-shadow:
+                0 4px 24px rgba(0,0,0,0.5),
+                0 0 0 1px rgba(255,255,255,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.15);
+        }
+
+        .fish-icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .fish-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(255,255,255,0.2) 0%,
+                rgba(255,255,255,0.05) 40%,
+                transparent 60%
+            );
+            z-index: 2;
+            border-radius: 20px;
+        }
+
+        .fish-icon::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 14px;
+            width: 36px;
+            height: 14px;
+            background: rgba(255,255,255,0.35);
+            border-radius: 50%;
+            filter: blur(5px);
+            z-index: 3;
+            transform: rotate(-20deg);
+        }
+
+        .fish-shadow {
+            width: 70px;
+            height: 10px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            filter: blur(6px);
+            animation: shadowPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes shadowPulse {
+            0%, 100% { opacity: 0.4; transform: scaleX(0.8); }
+            50%       { opacity: 0.7; transform: scaleX(1.1); }
+        }
+
+        .fish:hover .fish-icon {
+            transform: scale(1.1) translateY(-4px);
+            box-shadow:
+                0 12px 40px rgba(0,0,0,0.6),
+                0 0 0 1px rgba(255,255,255,0.25),
+                0 0 30px rgba(255,255,255,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .fish-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.8);
+            text-shadow: 0 0 12px rgba(255,255,255,0.4);
+            white-space: nowrap;
+        }
+
+            .nav-btn2 {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255,255,255,0.4);
+    color: white;
+    font-size: 1rem;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+      .nav-btn2:hover { background: rgba(255,255,255,0.3); }
+  #btn-prev { left: 1rem; }
+  #btn-next { right: 1rem; }
+    </style>
+</head>
+<body>
+
+<div id="bg"></div>
+<canvas id="canvas"></canvas>
+<div id="tank"></div>
+<div id="vignette"></div>
+
+    <a href="./index.html" style="text-decoration:none; top:1rem; right:1rem; transform:none; " class="font-golos-text font-semibold fixed z-40 nav-btn2">Menu</a>
+
+<script>
+const icons = [
+    { img: 'https://images.steamusercontent.com/ugc/14813997831500724588/AFB6F48B41990D719C2A2CBF9018C0EAE998F865/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', bg: 'https://images.steamusercontent.com/ugc/10095920248375316692/3F6862D75FF3433BDC2E71666FB160B74B78A62B/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', label: 'gm_brutalist_sand',    href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=3568874189' },
+    { img: 'https://images.steamusercontent.com/ugc/13050578054938729/85F710AB1C045F7F56F0C3650514379F53EBD2E9/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', bg: 'https://images.steamusercontent.com/ugc/13050578056028215/90C9B70D47DF490CD9724C865ACA57C36B7DE2B7/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', label: 'gm_fog_vibe',   href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=3429091206' },
+    { img: 'https://images.steamusercontent.com/ugc/1687145279029382302/E2F2040DCD7CC804B0037557C511067033DF01F2/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', bg: 'https://images.steamusercontent.com/ugc/1687145279029519610/22AD771A06D357DCE8305F7038D9420D50582FD4/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', label: 'CaelumColonia', href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=2548853801' },
+    { img: 'https://images.steamusercontent.com/ugc/1835795344307048079/99F04B698559CAC973FE3D66D9A9B01FF6AAFF5A/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', bg: 'https://images.steamusercontent.com/ugc/1835795344307053007/BCA2195690697C1975085A0C434F23442586A066/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', label: 'gm_sunshine',    href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=2829012047' },
+    { img: 'https://images.steamusercontent.com/ugc/1894352646068304098/7EA26127D44E23F497D0F3876140E281B6B2C248/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', bg: 'https://images.steamusercontent.com/ugc/1894352646068334094/ED8A0DDE6C7BEDF6AC0FEA629F38F50884927D3D/?imw=5000&imh=5000&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=false', label: 'gm_liminal_marble',    href: 'https://steamcommunity.com/sharedfiles/filedetails/?id=2878137765' },
+];
+
+// =====================
+// CANVAS
+// =====================
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+
+function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+function drawOverlay() {
+    const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0,   'rgba(0,10,40,0.3)');
+    grad.addColorStop(0.5, 'rgba(0,0,0,0)');
+    grad.addColorStop(1,   'rgba(0,5,20,0.5)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+let rayT = 0;
+const rays = [
+    { x: 0.15, w: 70,  angle:  0.1,  alpha: 0.04, spd: 0.004 },
+    { x: 0.38, w: 50,  angle: -0.07, alpha: 0.03, spd: 0.007 },
+    { x: 0.58, w: 90,  angle:  0.15, alpha: 0.05, spd: 0.005 },
+    { x: 0.78, w: 55,  angle: -0.05, alpha: 0.04, spd: 0.006 },
+];
+
+function drawRays() {
+    rayT += 0.01;
+    rays.forEach((r, i) => {
+        const pulse = 0.4 + 0.6 * Math.abs(Math.sin(rayT * r.spd * 80 + i * 1.9));
+        ctx.save();
+        ctx.translate(canvas.width * r.x, 0);
+        ctx.rotate(r.angle);
+        const len = canvas.height * 1.2;
+        const g = ctx.createLinearGradient(0, 0, 0, len);
+        g.addColorStop(0,   `rgba(200,230,255,${r.alpha * pulse})`);
+        g.addColorStop(0.6, `rgba(100,170,255,${r.alpha * pulse * 0.3})`);
+        g.addColorStop(1,   'rgba(50,100,200,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.moveTo(-r.w/2, 0);
+        ctx.lineTo(r.w/2, 0);
+        ctx.lineTo(r.w*2, len);
+        ctx.lineTo(-r.w*2, len);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+    });
+}
+
+const dust = Array.from({length: 50}, () => ({
+    x:     Math.random() * window.innerWidth,
+    y:     Math.random() * window.innerHeight,
+    r:     0.5 + Math.random() * 1.5,
+    vx:    (Math.random() - 0.5) * 0.12,
+    vy:    -0.05 - Math.random() * 0.15,
+    alpha: 0.04 + Math.random() * 0.12,
+    pulse: Math.random() * Math.PI * 2,
+}));
+
+function drawDust() {
+    dust.forEach(d => {
+        d.pulse += 0.018;
+        d.x += d.vx;
+        d.y += d.vy;
+        if (d.y < -5)           d.y = canvas.height + 5;
+        if (d.x < 0)            d.x = canvas.width;
+        if (d.x > canvas.width) d.x = 0;
+        const a = d.alpha * (0.5 + 0.5 * Math.sin(d.pulse));
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(200,220,255,${a})`;
+        ctx.fill();
+    });
+}
+
+// =====================
+// BULLES
+// =====================
+function makePhysicsBubble(init = false) {
+    return {
+        x:           Math.random() * window.innerWidth,
+        y:           init ? Math.random() * window.innerHeight : window.innerHeight + 20,
+        r: 8 + Math.random() * 20,
+        speed:       0.3 + Math.random() * 1.1,
+        wobble:      Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.015 + Math.random() * 0.025,
+        wobbleAmp:   0.5 + Math.random() * 1.2,
+        alpha:       0.12 + Math.random() * 0.35,
+        vx: 0,
+        vy: 0,
+    };
+}
+
+const physicsBubbles = Array.from({length: 45}, () => makePhysicsBubble(true));
+
+function drawBubbles() {
+    const waveY = 60;
+    const fadeDist = 80;
+
+    physicsBubbles.forEach((b, i) => {
+        b.wobble += b.wobbleSpeed;
+        b.vx += Math.sin(b.wobble) * b.wobbleAmp * 0.05;
+        b.vy -= b.speed * 0.1;
+        b.vx *= 0.97;
+        b.vy *= 0.97;
+        b.x += b.vx + Math.sin(b.wobble) * b.wobbleAmp * 0.3;
+        b.y += b.vy - b.speed * 0.7;
+
+        if (b.y < -20) { physicsBubbles[i] = makePhysicsBubble(false); return; }
+
+        // Interaction avec les icônes
+        fishes.forEach(f => {
+    const dx = b.x - f.x;
+    const dy = b.y - f.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const minDist = 70 + b.r;
+    if (dist < minDist) {
+        const nx = dx/dist, ny = dy/dist;
+        const force = (minDist - dist) / minDist;
+        b.vx += nx * force * 2;
+        b.vy += ny * force * 2;
+        // Pousse l'icône mais ignore le champ de force entre icônes
+        f.vx -= nx * force * 0.1 * (b.r / 8);
+        f.vy -= ny * force * 0.1 * (b.r / 8);
+    }
+});
+
+        // Reset si au dessus de la vague
+        if (b.y < waveY) {
+            physicsBubbles[i] = makePhysicsBubble(false);
+            return;
+        }
+
+        // Opacité qui fade en approchant la vague
+        let drawAlpha = b.alpha;
+        if (b.y < waveY + fadeDist) {
+            drawAlpha = b.alpha * Math.max(0, (b.y - waveY) / fadeDist);
+        }
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        const g = ctx.createRadialGradient(
+            b.x - b.r*0.35, b.y - b.r*0.35, b.r*0.05,
+            b.x, b.y, b.r
+        );
+        g.addColorStop(0,    `rgba(255,255,255,${drawAlpha * 1.6})`);
+        g.addColorStop(0.3,  `rgba(200,230,255,${drawAlpha * 0.5})`);
+        g.addColorStop(0.85, `rgba(100,170,255,${drawAlpha * 0.1})`);
+        g.addColorStop(1,    'rgba(50,100,200,0)');
+        ctx.fillStyle = g;
+        ctx.fill();
+        ctx.strokeStyle = `rgba(255,255,255,${drawAlpha * 0.5})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(b.x - b.r*0.3, b.y - b.r*0.32, b.r*0.22, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${drawAlpha * 0.9})`;
+        ctx.fill();
+        ctx.restore();
+    });
+}
+
+let waveT = 0;
+function drawSurface() {
+    waveT += 0.012;
+    const y0 = 50; // hauteur depuis le haut — change cette valeur pour monter/descendre
+
+    // Couche 1 — vague principale
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    for (let x = 0; x <= canvas.width; x += 3) {
+        const y = y0
+            + Math.sin(x * 0.008 + waveT) * 8
+            + Math.sin(x * 0.02  + waveT * 1.6) * 4
+            + Math.sin(x * 0.04  + waveT * 0.8) * 2;
+        ctx.lineTo(x, y);
+    }
+    ctx.lineTo(canvas.width, 0);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    const g1 = ctx.createLinearGradient(0, 0, 0, y0 + 15);
+    g1.addColorStop(0,   'rgba(120,210,255,0.25)');
+    g1.addColorStop(0.6, 'rgba(80,170,255,0.1)');
+    g1.addColorStop(1,   'rgba(0,80,180,0)');
+    ctx.fillStyle = g1;
+    ctx.fill();
+
+    // Couche 2 — vague décalée plus subtile
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    for (let x = 0; x <= canvas.width; x += 3) {
+        const y = y0 - 8
+            + Math.sin(x * 0.01  + waveT * 1.2 + 1) * 6
+            + Math.sin(x * 0.025 + waveT * 0.9) * 3;
+        ctx.lineTo(x, y);
+    }
+    ctx.lineTo(canvas.width, 0);
+    ctx.lineTo(0, 0);
+    ctx.closePath();
+    const g2 = ctx.createLinearGradient(0, 0, 0, y0 + 5);
+    g2.addColorStop(0,   'rgba(200,240,255,0.15)');
+    g2.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = g2;
+    ctx.fill();
+
+    // Ligne lumineuse sur la crête
+    ctx.beginPath();
+    for (let x = 0; x <= canvas.width; x += 3) {
+        const y = y0
+            + Math.sin(x * 0.008 + waveT) * 8
+            + Math.sin(x * 0.02  + waveT * 1.6) * 4
+            + Math.sin(x * 0.04  + waveT * 0.8) * 2;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = 'rgba(200,240,255,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+}
+
+function renderCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawOverlay();
+    drawRays();
+    drawDust();
+    drawBubbles();
+    drawSurface();
+    requestAnimationFrame(renderCanvas);
+}
+
+// =====================
+// PHYSIQUE ICONES
+// =====================
+const tank   = document.getElementById('tank');
+const fishes = [];
+
+icons.forEach((icon, idx) => {
+    const el = document.createElement('div');
+    el.className = 'fish';
+    el.innerHTML = `
+        <div class="fish-icon"><img src="${icon.img}" alt="${icon.label}"></div>
+        <div class="fish-shadow"></div>
+        <div class="fish-label">${icon.label}</div>
+    `;
+    tank.appendChild(el);
+
+    const fishObj = {
+        el,
+        x:           120 + Math.random() * (window.innerWidth  - 240),
+        y:           120 + Math.random() * (window.innerHeight - 240),
+        vx:          (Math.random() - 0.5) * 2.5,
+        vy:          (Math.random() - 0.5) * 1.8,
+        wobblePhase: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.015 + Math.random() * 0.02,
+        buoyancy:    -0.015 + Math.random() * 0.01,
+        rot:         (Math.random() - 0.5) * 0.06,
+        rotSpeed:    (Math.random() - 0.5) * 0.004,
+        dragging:    false,
+    };
+    fishes.push(fishObj);
+
+    let mouseDownTime = 0;
+    let dragged = false;
+
+    el.addEventListener('mousedown', e => {
+        mouseDownTime = Date.now();
+        dragged = false;
+        fishObj.dragging = true;
+        fishObj.vx = 0;
+        fishObj.vy = 0;
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (!fishObj.dragging) return;
+        const dx = e.movementX;
+        const dy = e.movementY;
+        if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragged = true;
+        fishObj.x += dx;
+        fishObj.y += dy;
+        fishObj.vx = dx * 0.5;
+        fishObj.vy = dy * 0.5;
+    });
+
+    document.addEventListener('mouseup', e => {
+        if (!fishObj.dragging) return;
+        fishObj.dragging = false;
+        const elapsed = Date.now() - mouseDownTime;
+        // Clic court sans drag = ouvre le lien
+        if (!dragged && elapsed < 200 && icon.href && icon.href !== '#') {
+            window.location.href = icon.href;
+        }
+    });
+});
+
+renderCanvas();
+
+function resolveCollision(a, b) {
+    if (a.dragging || b.dragging) return;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const minDist = 140;
+
+    // Champ de force — repousse même avant contact
+    if (dist < minDist * 1.5) {
+        const nx = dx/dist, ny = dy/dist;
+        const force = Math.pow((minDist * 1.5 - dist) / (minDist * 1.5), 2) * 0.8;
+        a.vx -= nx * force;
+        a.vy -= ny * force;
+        b.vx += nx * force;
+        b.vy += ny * force;
+    }
+
+    // Séparation physique si vraiment trop proches
+    if (dist < minDist) {
+        const nx = dx/dist, ny = dy/dist;
+        const overlap = minDist - dist;
+        a.x -= nx * overlap * 0.5;
+        a.y -= ny * overlap * 0.5;
+        b.x += nx * overlap * 0.5;
+        b.y += ny * overlap * 0.5;
+        a.vx -= nx * 0.5;
+        a.vy -= ny * 0.5;
+        b.vx += nx * 0.5;
+        b.vy += ny * 0.5;
+    }
+}
+
+function updateFishes() {
+    const margin  = 20;
+    const imgSize = 55;
+    const waveBarrier = 80;
+    const W = window.innerWidth, H = window.innerHeight;
+    const maxV = 2; // était 3
+
+    fishes.forEach(f => {
+        if (f.dragging) {
+            f.el.style.left      = (f.x - 55) + 'px';
+            f.el.style.top       = (f.y - 55) + 'px';
+            f.el.style.transform = `rotate(${f.rot}rad)`;
+            return;
+        }
+
+        f.wobblePhase += f.wobbleSpeed;
+        f.vx += Math.sin(f.wobblePhase) * 0.01;
+        f.vy += f.buoyancy;
+        f.vx *= 0.994;
+        f.vy *= 0.994;
+
+        const spd = Math.sqrt(f.vx*f.vx + f.vy*f.vy);
+        if (spd > maxV) { f.vx = f.vx/spd*maxV; f.vy = f.vy/spd*maxV; }
+
+        f.x += f.vx; f.y += f.vy;
+
+        if (f.x < margin + imgSize)        { f.x = margin + imgSize;        f.vx =  Math.abs(f.vx)*0.5; }
+        if (f.x > W - margin - imgSize)    { f.x = W - margin - imgSize;    f.vx = -Math.abs(f.vx)*0.5; }
+        if (f.y < waveBarrier)             { f.y = waveBarrier;             f.vy =  Math.abs(f.vy)*0.5; }
+        if (f.y > H - margin - imgSize)    { f.y = H - margin - imgSize;    f.vy = -Math.abs(f.vy)*0.5; }
+
+        f.rot += f.rotSpeed;
+        f.el.style.left      = (f.x - 55) + 'px';
+        f.el.style.top       = (f.y - 55) + 'px';
+        f.el.style.transform = `rotate(${f.rot}rad)`;
+    });
+
+    for (let i = 0; i < fishes.length; i++)
+        for (let j = i+1; j < fishes.length; j++)
+            resolveCollision(fishes[i], fishes[j]);
+
+    requestAnimationFrame(updateFishes);
+}
+updateFishes();
+
+document.addEventListener('mousemove', e => {
+    fishes.forEach(f => {
+        if (f.dragging) return;
+        const dx = f.x - e.clientX, dy = f.y - e.clientY;
+        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+        if (dist < 120) {
+            const force = (120-dist)/120 * 0.15; // était 0.4
+            f.vx += dx/dist*force;
+            f.vy += dy/dist*force;
+        }
+    });
+});
+
+// =====================
+// FOND AU HOVER
+// =====================
+const bg = document.getElementById('bg');
+
+document.querySelectorAll('.fish').forEach((el, i) => {
+el.addEventListener('mouseenter', () => {
+    bg.style.backgroundImage = `url('${icons[i].bg}')`;
+    bg.classList.add('visible');
+});
+    el.addEventListener('mouseleave', () => {
+        bg.classList.remove('visible');
+    });
+});
+</script>
+</body>
+</html>

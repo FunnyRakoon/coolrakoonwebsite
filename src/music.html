@@ -1,0 +1,383 @@
+<!doctype html>
+<html class="h-full">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../dist/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/style.css">
+</head>
+
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    .video-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+    .video-container video {
+        min-width: 100%;
+        min-height: 100%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        object-fit: cover;
+    }
+
+    .marquee-wrapper {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        overflow: hidden;
+        z-index: 10;
+        padding: 12px 0;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+    }
+
+    .marquee-track {
+        display: flex;
+        width: max-content;
+        animation: marquee 12s linear infinite;
+    }
+
+    .marquee-track span {
+        font-family: 'Golos Text', sans-serif;
+        font-weight: 900;
+        font-size: 3rem;
+        color: rgba(255, 255, 255, 0.25);
+        white-space: nowrap;
+        padding-right: 4rem;
+        letter-spacing: 0.05em;
+        text-shadow: 0px 9px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    @keyframes marquee {
+        from {
+            transform: translateX(0);
+        }
+
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    /* CD group — caché à droite au départ */
+    #cd-group {
+        position: absolute;
+        right: 0;
+        top: 68.5%;
+        transform: translate(90vw, -50%);
+        transition: transform 0.8s cubic-bezier(0.77, 0, 0.18, 1);
+        width: 44%;
+    }
+
+    #cd-group.visible {
+        transform: translate(0%, -50%);
+    }
+
+    /* Rotation du CD */
+    @keyframes spinCD {
+        from {
+            transform: translateY(-50%) rotate(0deg);
+        }
+
+        to {
+            transform: translateY(-50%) rotate(360deg);
+        }
+    }
+
+    #cdDisc.spinning {
+        animation: spinCD 4s linear infinite;
+    }
+
+    /* Flèche play */
+    #arrow-play {
+        position: absolute;
+        right: -8%;
+        top: 68%;
+        transform: translateY(-50%);
+        z-index: 10;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(6px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        font-size: 1.5rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, opacity 0.3s;
+    }
+
+    #arrow-play:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    #arrow-play.hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Flèche next (cachée au départ) */
+    #arrow-next {
+        position: absolute;
+        right: -8%;
+        top: 68%;
+        transform: translateY(-50%);
+        z-index: 10;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(6px);
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        font-size: 1.5rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: background 0.2s, opacity 0.3s;
+    }
+
+    #arrow-next:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    #arrow-next.visible {
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* YouTube iframe caché */
+    #yt-player {
+        position: fixed;
+        top: -9999px;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+    }
+
+        .nav-btn2 {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 40;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(6px);
+    border: 2px solid rgba(255,255,255,0.4);
+    color: white;
+    font-size: 1rem;
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+
+      .nav-btn2:hover { background: rgba(255,255,255,0.3); }
+  #btn-prev { left: 1rem; }
+  #btn-next { right: 1rem; }
+</style>
+
+<body class="h-full font-golos-text font-black overflow-hidden">
+
+    <div class="video-container">
+        <video src="../media/backmusic.mp4" autoplay muted loop></video>
+    </div>
+
+    <!-- YouTube IFrame API -->
+    <div id="yt-player"></div>
+
+    <div class="h-full flex items-center justify-center" style="position: relative; z-index: 1;">
+        <div style="position: relative; width: 80vw; height: 70vh;">
+
+            <!-- Cover -->
+            <img src="../media/cover_casevar.png"
+                style="position: absolute; left: 30%; top: 68%; transform: translateY(-50%); width: 47%; height: auto; z-index: 3;" />
+
+            <!-- Flèche play -->
+            <button id="arrow-play">&#9654;</button>
+
+            <!-- Flèche next (cachée au départ) -->
+            <button id="arrow-next">&#9654;</button>
+
+            <!-- CD group -->
+            <div id="cd-group">
+                <img id="cdCase" src="../media/backCD.png"
+                    style="width: 100%; height: auto; z-index: 1; display: block;" />
+                <img id="cdDisc" src="../media/CD1.png"
+                    style="position: absolute; left: 7%; top: 49%; transform: translateY(-50%); width: 86%; height: auto; z-index: 2;" />
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Texte défilant -->
+    <div class="marquee-wrapper">
+        <div class="marquee-track font-golos-text font-black">
+            <span>NOW LISTENING: E/VOL - NOW LISTENING: E/VOL - NOW LISTENING: E/VOL - NOW LISTENING: E/VOL
+                -&nbsp;</span>
+            <span>NOW LISTENING: E/VOL - NOW LISTENING: E/VOL - NOW LISTENING: E/VOL - NOW LISTENING: E/VOL
+                -&nbsp;</span>
+        </div>
+    </div>
+
+    <a href="./index.html" style="text-decoration:none; top:1rem; right:1rem; transform:none; " class="font-golos-text font-semibold fixed z-40 nav-btn2">Menu</a>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+    let ytPlayer;
+    let currentCD = 0;
+    let playerReady = false;
+    let pendingPlay = false;
+
+    const cds = [
+        { cover: '../media/backCD.png', disc: '../media/CD1.png', youtubeId: '6Sw8UCPIerg', title: 'E/VOL' },
+        { cover: '../media/backCD3.png', disc: '../media/CD3.png', youtubeId: 'SgBrultm4r8', title: 'WRONG ERA' },
+        { cover: '../media/backCD2.png', disc: '../media/CD2.png', youtubeId: '_LDoJTpjODE', title: 'SPECIAL KIND OF LOVE' }
+    ];
+
+    function onYouTubeIframeAPIReady() {
+        ytPlayer = new YT.Player('yt-player', {
+            height: '1', width: '1',
+            videoId: cds[0].youtubeId,
+            playerVars: { autoplay: 0, controls: 0 },
+            events: {
+                onReady: (event) => {
+                    event.target.setVolume(100);
+                    playerReady = true;
+                    if (pendingPlay) {
+                        ytPlayer.setVolume(100);
+                        ytPlayer.unMute();
+                        ytPlayer.playVideo();
+                        pendingPlay = false;
+                    }
+                }
+            }
+        });
+    }
+
+    function loadCD(index) {
+        const cd = cds[index];
+        const marquee = document.querySelector('.marquee-wrapper');
+        marquee.style.opacity = 0;
+        setTimeout(() => {
+            document.getElementById('cdCase').src = cd.cover;
+            document.getElementById('cdDisc').src = cd.disc;
+            document.querySelectorAll('.marquee-track span').forEach(span => {
+                span.textContent = `NOW LISTENING: ${cd.title} - NOW LISTENING: ${cd.title} - NOW LISTENING: ${cd.title} - NOW LISTENING: ${cd.title} - `;
+            });
+            marquee.style.opacity = 1;
+        }, 400);
+        if (ytPlayer && ytPlayer.loadVideoById) {
+            ytPlayer.loadVideoById(cd.youtubeId);
+            ytPlayer.setVolume(100);
+            ytPlayer.unMute();
+            ytPlayer.playVideo();
+        }
+    }
+
+    function slideOut(callback) {
+        const cdGroup = document.getElementById('cd-group');
+        const marquee = document.querySelector('.marquee-wrapper');
+
+        marquee.style.opacity = 0;
+
+        let vol = 100;
+        const fadeAudio = setInterval(() => {
+            vol -= 5;
+            if (vol <= 0) {
+                vol = 0;
+                clearInterval(fadeAudio);
+                if (ytPlayer) ytPlayer.pauseVideo();
+            }
+            if (ytPlayer) ytPlayer.setVolume(vol);
+        }, 50);
+
+        const matrix = new WebKitCSSMatrix(window.getComputedStyle(cdDisc).transform);
+        const currentAngle = Math.round(Math.atan2(matrix.b, matrix.a) * (180 / Math.PI));
+        cdDisc.classList.remove('spinning');
+        cdDisc.style.transform = `translateY(-50%) rotate(${currentAngle}deg)`;
+        let speed = 3;
+        let angle = currentAngle;
+
+        function slowDown() {
+            speed *= 0.96;
+            angle += speed;
+            cdDisc.style.transform = `translateY(-50%) rotate(${angle}deg)`;
+            if (speed > 0.05) {
+                requestAnimationFrame(slowDown);
+            } else {
+                setTimeout(() => {
+                    cdGroup.style.transform = 'translate(150vw, -50%)';
+                    setTimeout(callback, 800);
+                }, 200);
+            }
+        }
+        requestAnimationFrame(slowDown);
+    }
+
+    function slideIn() {
+        const cdGroup = document.getElementById('cd-group');
+        cdDisc.style.transform = 'translateY(-50%) rotate(0deg)';
+        cdGroup.style.transform = 'translate(0%, -50%)';
+        setTimeout(() => { cdDisc.classList.add('spinning'); }, 800);
+    }
+
+    const arrowPlay = document.getElementById('arrow-play');
+    const arrowNext = document.getElementById('arrow-next');
+    const cdGroup = document.getElementById('cd-group');
+    const cdDisc = document.getElementById('cdDisc');
+
+    arrowPlay.addEventListener('click', () => {
+        cdGroup.style.transform = 'translate(0%, -50%)';
+        arrowPlay.classList.add('hidden');
+        setTimeout(() => {
+            cdDisc.classList.add('spinning');
+            if (ytPlayer && playerReady) {
+                ytPlayer.setVolume(100);
+                ytPlayer.unMute();
+                ytPlayer.playVideo();
+            } else {
+                pendingPlay = true;
+            }
+            arrowNext.classList.add('visible');
+            document.querySelector('.marquee-wrapper').style.opacity = 1;
+        }, 800);
+    });
+
+    arrowNext.addEventListener('click', () => {
+        slideOut(() => {
+            currentCD = (currentCD + 1) % cds.length;
+            loadCD(currentCD);
+            slideIn();
+        });
+    });
+</script>
+
+</body>
+
+</html>

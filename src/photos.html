@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../dist/output.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/style.css">
+    <title>Document</title>
+</head>
+
+<body class="font-golos-text font-bold">
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+        }
+
+        #bg-current,
+        #bg-next {
+            position: fixed;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #bg-next {
+            opacity: 0;
+        }
+
+        #img-wrapper {
+            position: absolute;
+            top: 1.625rem;
+            left: 6.875rem;
+            max-height: calc(110dvh - 7.25rem);
+            will-change: transform;
+            cursor: pointer;
+        }
+
+        #img-wrapper img {
+            max-height: calc(110dvh - 7.25rem);
+            width: auto;
+            display: block;
+            filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.3));
+            transition: transform 0.3s ease, filter 0.3s ease;
+        }
+
+        #img-wrapper img:hover {
+            transform: scale(1.03);
+            filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.5));
+        }
+
+        #img-wrapper2 {
+            position: absolute;
+            bottom: 0.50rem;
+            left: 0.875rem;
+            max-height: calc(60dvh - 5rem);
+            will-change: transform;
+        }
+
+        #img-wrapper2 img {
+            max-height: calc(60dvh - 5rem);
+            width: auto;
+            display: block;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+        }
+
+        #img-wrapper3 {
+            position: absolute;
+            right: -1rem;
+            bottom: 0.5rem;
+            max-height: calc(29dvh - 5rem);
+            will-change: transform;
+        }
+
+        #img-wrapper3 img {
+            max-height: calc(29dvh - 5rem);
+            width: auto;
+            display: block;
+            filter: brightness(1.5) saturate(1.3) drop-shadow(0 10px 20px rgba(0, 100, 255, 0.3));
+        }
+
+        #img-wrapper4 {
+            position: absolute;
+            right: -6rem;
+            top: -8rem;
+            max-height: calc(104dvh - 5rem);
+            will-change: transform;
+        }
+
+        #img-wrapper4 img {
+            max-height: calc(104dvh - 5rem);
+            width: auto;
+            display: block;
+        }
+
+        #arrow-prev,
+        #arrow-next {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 50;
+            cursor: pointer;
+            user-select: none;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #arrow-prev {
+            left: 1.5rem;
+        }
+
+        #arrow-next {
+            right: 1.5rem;
+        }
+
+        .arrow-svg {
+            width: 60px;
+            height: 60px;
+            overflow: visible;
+        }
+
+        /* Cercle qui tourne */
+        .arrow-ring {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.3);
+            stroke-width: 1;
+            stroke-dasharray: 8 4;
+            transform-origin: 30px 30px;
+            animation: spinRing 6s linear infinite;
+        }
+
+        #arrow-prev .arrow-ring {
+            animation-direction: reverse;
+        }
+
+        @keyframes spinRing {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Chevron */
+        .arrow-chevron {
+            fill: none;
+            stroke: white;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.2s ease;
+        }
+
+        /* Point central qui pulse */
+        .arrow-dot {
+            fill: white;
+            transform-origin: 30px 30px;
+            animation: pulseDot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                r: 2;
+                opacity: 0.6;
+            }
+
+            50% {
+                r: 4;
+                opacity: 1;
+            }
+        }
+
+        /* Hover — accélère le cercle et grossit le chevron */
+        #arrow-prev:hover .arrow-ring,
+        #arrow-next:hover .arrow-ring {
+            animation-duration: 1.5s;
+            stroke: rgba(255, 255, 255, 0.8);
+        }
+
+        #arrow-prev:hover .arrow-chevron,
+        #arrow-next:hover .arrow-chevron {
+            stroke: white;
+            filter: drop-shadow(0 0 6px white);
+        }
+
+        #arrow-prev:hover .arrow-dot,
+        #arrow-next:hover .arrow-dot {
+            animation-duration: 0.6s;
+        }
+
+        /* Ligne qui glisse au hover */
+        .arrow-trail {
+            stroke: rgba(255, 255, 255, 0);
+            stroke-width: 1;
+            stroke-linecap: round;
+            fill: none;
+            transition: stroke 0.3s ease;
+        }
+
+        #arrow-prev:hover .arrow-trail,
+        #arrow-next:hover .arrow-trail {
+            stroke: rgba(255, 255, 255, 0.25);
+        }
+
+        @keyframes float1 {
+
+            0%,
+            100% {
+                translate: 0px 0px;
+            }
+
+            50% {
+                translate: 0px -12px;
+            }
+        }
+
+        @keyframes float2 {
+
+            0%,
+            100% {
+                translate: 0px 0px;
+            }
+
+            50% {
+                translate: 6px -8px;
+            }
+        }
+
+        @keyframes float3 {
+
+            0%,
+            100% {
+                translate: 0px 0px;
+            }
+
+            50% {
+                translate: -5px -10px;
+            }
+        }
+
+        @keyframes float4 {
+
+            0%,
+            100% {
+                translate: 0px 0px;
+            }
+
+            50% {
+                translate: -3px -6px;
+            }
+        }
+
+        /* ---- OVERLAY ---- */
+        #overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        #marquee-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 101;
+            overflow: hidden;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .marquee-row {
+            white-space: nowrap;
+            overflow: hidden;
+            height: 88px;
+            display: flex;
+            align-items: center;
+        }
+
+        .marquee-track {
+            display: inline-flex;
+            will-change: transform;
+            font-family: 'Golos Text', sans-serif;
+            font-weight: 900;
+            font-size: 72px;
+            color: rgba(255, 255, 255, 0.06);
+            letter-spacing: 0.05em;
+            gap: 60px;
+        }
+
+        .marquee-track.left {
+            animation: marqueeLeft 18s linear infinite;
+        }
+
+        .marquee-track.right {
+            animation: marqueeRight 18s linear infinite;
+        }
+
+        @keyframes marqueeLeft {
+            from {
+                transform: translateX(0);
+            }
+
+            to {
+                transform: translateX(-50%);
+            }
+        }
+
+        @keyframes marqueeRight {
+            from {
+                transform: translateX(-50%);
+            }
+
+            to {
+                transform: translateX(0);
+            }
+        }
+
+        #overlay-container {
+            position: relative;
+            z-index: 102;
+            cursor: default;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        #overlay-bg {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) brightness(0.6);
+            z-index: 0;
+        }
+
+        #overlay-sheen {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        #overlay-sheen::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: 0;
+            width: 35%;
+            height: 200%;
+            background: linear-gradient(90deg,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.06) 50%,
+                    rgba(255, 255, 255, 0) 100%);
+            animation: sheen 4s ease-in-out infinite;
+        }
+
+        @keyframes sheen {
+            0% {
+                transform: translateX(-150%) rotate(15deg);
+            }
+
+            100% {
+                transform: translateX(400%) rotate(15deg);
+            }
+        }
+
+        #overlay-img {
+            position: relative;
+            z-index: 1;
+            max-height: 80vh;
+            max-width: 80vw;
+            object-fit: contain;
+            border-radius: 4px;
+            display: block;
+            transform: scale(0.95);
+            transition: transform 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+            animation: imgPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes imgPulse {
+
+            0%,
+            100% {
+                filter: brightness(1) saturate(1);
+            }
+
+            50% {
+                filter: brightness(1.08) saturate(1.15);
+            }
+        }
+
+        .nav-btn2 {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 40;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            font-size: 1rem;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .nav-btn2:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+
+    <div id="bg-current"></div>
+    <div id="bg-next"></div>
+
+    <div id="img-wrapper">
+        <img id="main-img" src="" alt="">
+    </div>
+    <div id="img-wrapper2">
+        <img id="logo-img" src="" alt="">
+    </div>
+    <div id="img-wrapper3">
+        <img id="extra-img" src="" alt="">
+    </div>
+    <div id="img-wrapper4">
+        <img id="arrows-img" src="" alt="">
+    </div>
+
+    <div id="arrow-prev">
+        <svg class="arrow-svg" viewBox="0 0 60 60">
+            <circle class="arrow-ring" cx="30" cy="30" r="26" />
+            <polyline class="arrow-chevron" points="34,18 22,30 34,42" />
+            <line class="arrow-trail" x1="48" y1="30" x2="22" y2="30" />
+        </svg>
+    </div>
+
+    <div id="arrow-next">
+        <svg class="arrow-svg" viewBox="0 0 60 60">
+            <circle class="arrow-ring" cx="30" cy="30" r="26" />
+            <polyline class="arrow-chevron" points="26,18 38,30 26,42" />
+            <line class="arrow-trail" x1="12" y1="30" x2="38" y2="30" />
+        </svg>
+    </div>
+
+    <div id="overlay">
+        <div id="marquee-bg"></div>
+        <div id="overlay-container" onclick="event.stopPropagation()">
+            <div id="overlay-bg"></div>
+            <div id="overlay-sheen"></div>
+            <img id="overlay-img" src="" alt="">
+        </div>
+    </div>
+
+    <a href="./index.html" style="text-decoration:none; top:1rem; right:1rem; transform:none;"
+        class="fixed z-40 nav-btn2 font-golos-text font-bold">Menu</a>
+
+    <script>
+        // =============================================
+        // CONFIG DES SLIDES
+        // =============================================
+        const slides = [
+            {
+                bg: '../media/BGPIC1.png',
+                img: '../media/IMG1.png',
+                logo: '../media/logorak.png',
+                extra: '../media/BLUESEA.png',
+                arrows: '../media/arrows1.png',
+                marqueeText: 'BLUE SEA',
+            },
+            {
+                bg: '../media/BGPIC2.png',
+                img: '../media/IMG2.png',
+                logo: '../media/logorak.png',
+                extra: '../media/HORIZON.png',
+                arrows: '../media/arrows2.png',
+                marqueeText: 'HORIZON',
+            },
+            {
+                bg: '../media/BGPIC3.png',
+                img: '../media/IMG3.png',
+                logo: '../media/logorak.png',
+                extra: '../media/FLOWER.png',
+                arrows: '../media/arrows3.png',
+                marqueeText: 'FLOWERBOI',
+            },
+            {
+                bg: '../media/BGPIC4.png',
+                img: '../media/IMG4.png',
+                logo: '../media/logorak.png',
+                extra: '../media/INTRO.png',
+                arrows: '../media/arrows4.png',
+                marqueeText: 'INTROSPECT',
+            },
+            {
+                bg: '../media/BGPIC5.png',
+                img: '../media/IMG5.png',
+                logo: '../media/logorak.png',
+                extra: '../media/FREEDOM.png',
+                arrows: '../media/arrows5.png',
+                marqueeText: 'FREEDOM',
+            },
+        ];
+
+        let current = 0;
+        let transitioning = false;
+
+        const bgCurrent = document.getElementById('bg-current');
+        const bgNext = document.getElementById('bg-next');
+        const w1 = document.getElementById('img-wrapper');
+        const w2 = document.getElementById('img-wrapper2');
+        const w3 = document.getElementById('img-wrapper3');
+        const w4 = document.getElementById('img-wrapper4');
+        const mainImg = document.getElementById('main-img');
+        const logoImg = document.getElementById('logo-img');
+        const extraImg = document.getElementById('extra-img');
+        const arrowsImg = document.getElementById('arrows-img');
+
+        const DUR = 600;
+
+        function applyFloat() {
+            w1.style.animation = 'float1 5s ease-in-out infinite';
+            w2.style.animation = 'float2 4s ease-in-out infinite';
+        }
+
+        function loadSlide(index, animate) {
+            const s = slides[index];
+            if (!animate) {
+                bgCurrent.style.backgroundImage = `url(${s.bg})`;
+                mainImg.src = s.img;
+                logoImg.src = s.logo;
+                extraImg.src = s.extra;
+                arrowsImg.src = s.arrows;
+                document.getElementById('overlay-img').src = s.img;
+
+                applyFloat();
+                return;
+            }
+
+            transitioning = true;
+
+            // Stop float
+            [w1, w2, w3, w4].forEach(el => el.style.animation = 'none');
+
+            // Sortie
+            w1.style.transition = `transform ${DUR}ms ease, opacity ${DUR}ms ease`;
+            w1.style.transform = 'translateX(-120vw)';
+            w1.style.opacity = '0';
+
+            w2.style.transition = `transform ${DUR}ms ease, opacity ${DUR}ms ease`;
+            w2.style.transform = 'translateY(120vh)';
+            w2.style.opacity = '0';
+
+            w3.style.transition = `transform ${DUR + 100}ms ease, opacity ${DUR + 100}ms ease`;
+            w3.style.transform = 'translateY(120vh)';
+            w3.style.opacity = '0';
+
+            w4.style.transition = `transform ${DUR}ms ease, opacity ${DUR}ms ease`;
+            w4.style.transform = 'translateY(-120vh)';
+            w4.style.opacity = '0';
+
+            // Fondu fond
+            bgNext.style.backgroundImage = `url(${s.bg})`;
+            bgNext.style.transition = 'none';
+            bgNext.style.opacity = '0';
+            setTimeout(() => {
+                bgNext.style.transition = 'opacity 0.8s ease';
+                bgNext.style.opacity = '1';
+            }, 50);
+
+            setTimeout(() => {
+                // Swap fond
+                bgCurrent.style.backgroundImage = `url(${s.bg})`;
+                bgNext.style.transition = 'none';
+                bgNext.style.opacity = '0';
+
+                // Nouveaux assets
+                mainImg.src = s.img;
+                logoImg.src = s.logo;
+                extraImg.src = s.extra;
+                arrowsImg.src = s.arrows;
+                document.getElementById('overlay-img').src = s.img;
+
+
+                // Place hors écran pour entrée
+                [w1, w2, w3, w4].forEach(el => { el.style.transition = 'none'; el.style.opacity = '1'; });
+                w1.style.transform = 'translateX(120vw)';
+                w2.style.transform = 'translateY(120vh)';
+                w3.style.transform = 'translateY(120vh)';
+                w4.style.transform = 'translateY(-120vh)';
+
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    // Entrée
+                    w1.style.transition = `transform ${DUR}ms cubic-bezier(0.22,1,0.36,1)`;
+                    w1.style.transform = 'translateX(0)';
+
+                    w2.style.transition = `transform ${DUR}ms cubic-bezier(0.22,1,0.36,1)`;
+                    w2.style.transform = 'translateY(0)';
+
+                    w3.style.transition = `transform ${DUR + 100}ms cubic-bezier(0.22,1,0.36,1)`;
+                    w3.style.transform = 'translateY(0)';
+
+                    w4.style.transition = `transform ${DUR}ms cubic-bezier(0.22,1,0.36,1)`;
+                    w4.style.transform = 'translateY(0)';
+
+                    setTimeout(() => {
+                        [w1, w2, w3, w4].forEach(el => {
+                            el.style.transition = '';
+                            el.style.transform = '';
+                        });
+                        current = index;
+                        applyFloat();
+                        transitioning = false;
+                    }, DUR + 150);
+                }));
+            }, DUR + 200);
+        }
+
+        // Navigation
+        document.getElementById('arrow-prev').addEventListener('click', () => {
+            if (transitioning) return;
+            loadSlide((current - 1 + slides.length) % slides.length, true);
+        });
+        document.getElementById('arrow-next').addEventListener('click', () => {
+            if (transitioning) return;
+            loadSlide((current + 1) % slides.length, true);
+        });
+
+        // =====================
+        // EFFET 3D SOURIS
+        // =====================
+        let mouseX = 0, mouseY = 0, curX = 0, curY = 0;
+        function lerp(a, b, t) { return a + (b - a) * t; }
+
+        function tick() {
+            curX = lerp(curX, mouseX, 0.06);
+            curY = lerp(curY, mouseY, 0.06);
+            if (!transitioning) {
+                w1.style.transform = `perspective(800px) rotateY(${curX * 4.5}deg) rotateX(${-curY * 4.5}deg)`;
+                w2.style.transform = `perspective(800px) rotateY(${curX * 10}deg) rotateX(${-curY * 10}deg)`;
+            }
+            requestAnimationFrame(tick);
+        }
+        document.addEventListener('mousemove', e => {
+            mouseX = (e.clientX / window.innerWidth) - 0.5;
+            mouseY = (e.clientY / window.innerHeight) - 0.5;
+        });
+        document.addEventListener('mouseleave', () => { mouseX = 0; mouseY = 0; });
+        tick();
+
+        // =====================
+        // OVERLAY
+        // =====================
+        const overlay = document.getElementById('overlay');
+        const overlayImg = document.getElementById('overlay-img');
+
+        function buildMarquee(text) {
+            const container = document.getElementById('marquee-bg');
+            container.innerHTML = '';
+            const lineH = 88;
+            const lines = Math.ceil(window.innerHeight / lineH) + 2;
+            const repeat = Array(16).fill(text).join('   ');
+            for (let i = 0; i < lines; i++) {
+                const row = document.createElement('div');
+                row.className = 'marquee-row';
+                const track = document.createElement('div');
+                track.className = `marquee-track ${i % 2 === 0 ? 'left' : 'right'}`;
+                track.style.animationDuration = `${40 + (i % 4) * 8}s`;
+                track.innerHTML = `<span>${repeat}</span><span>${repeat}</span>`;
+                row.appendChild(track);
+                container.appendChild(row);
+            }
+        }
+
+        function openOverlay() {
+            buildMarquee(slides[current].marqueeText);
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+                overlayImg.style.transform = 'scale(1)';
+            });
+        }
+
+        function closeOverlay() {
+            overlay.style.opacity = '0';
+            overlayImg.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                document.getElementById('marquee-bg').innerHTML = '';
+            }, 400);
+        }
+
+        w1.addEventListener('click', openOverlay);
+        overlay.addEventListener('click', closeOverlay);
+
+        // Init
+        loadSlide(0, false);
+    </script>
+
+</body>
+
+</html>
