@@ -1,5 +1,4 @@
 import { log, LOG_TYPE } from './logger.js';
-import * as Sfx from './sfx.js';
 
 const DIRECTION = {
     Left: -1,
