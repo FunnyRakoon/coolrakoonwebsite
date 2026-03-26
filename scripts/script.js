@@ -121,7 +121,7 @@ async function moveMenuItemsHorizontally(direction) {
     // Change style of active menu item
     updateStyleActiveMenuItem();
 
-    await Sfx.playClick();
+    
 
     // Get all menu items
     const menuItems = document.querySelectorAll('.menu-item');
@@ -168,7 +168,7 @@ async function moveSubMenuItemsVertically(direction) {
     changeActiveSubMenuItemIndex(direction);
     updateActiveSubMenuItemStyle();
 
-    await Sfx.playClick();
+   
 
     //Get selected menu item's children (sub menu items)
     const subMenuItems = Array.from(activeMenuItem.subMenuItemContainer.children);
